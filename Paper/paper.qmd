@@ -1,0 +1,111 @@
+---
+title: "From Classrooms to Paychecks"
+subtitle: "How Education Levels Shape Economic Outcomes Across Santa Clara County Neighborhoods"
+author: "Abhishek Rasikbhai Shekhada"
+thanks: "Project repository available at: https://github.com/arshekhada/Math-261A-Project-1"
+date: today
+date-format: long
+format: pdf
+bibliography: "references.bib"
+
+abstract: >
+  In this paper, I investigate whether educational attainment is linked to household income
+  across neighborhoods in Santa Clara County. Using tract-level data from the American Community
+  Survey, I apply a simple linear regression model with median household income as the outcome
+  and the share of adults without a high school diploma as the predictor. The results show a strong negative relationship: each one-percentage-point increase in adults without high school completion corresponds to an estimated decrease of about $3,190 in median income, with the model explaining roughly half of the variation in income across tracts. These findings highlight the importance of education for local economic outcomes and suggest that differences in educational attainment contribute substantially to income inequality within the county.
+
+
+
+---
+
+```{r}
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(palmerpenguins)
+
+getwd()
+list.files()
+file.exists("/Users/spartan/Documents/Math 261A/Project 1/references.bib")
+```
+
+# Introduction
+
+Education has long been recognized as one of the most important factors shaping people’s economic opportunities. Individuals who complete more schooling typically earn higher incomes, enjoy greater job stability, and have access to a wider range of careers [@card1999causal; @baum2003higher]. On the other hand, communities where fewer adults complete high school often face long-term challenges such as lower wages, reduced access to resources, and fewer chances for upward mobility. These ideas motivated me to explore the link between education and income at the neighborhood level, where disparities are often less visible but still meaningful.  
+
+Santa Clara County, the heart of Silicon Valley, provides an especially interesting setting for this question. The county is well known for its wealth and innovation, yet not all neighborhoods share equally in this prosperity. Some tracts benefit from high levels of education and the rewards of the tech economy, while others lag behind in both schooling and earnings. Looking at these differences within a single county can reveal how local variations in education translate into differences in household income, even in a region that is often considered wealthy overall.  
+
+Most research on this topic has focused on individuals or national trends, leaving a gap in understanding how education and income interact across neighborhoods within the same county. This paper addresses that gap by asking: *Do census tracts with a higher share of adults lacking a high school diploma also report lower median household incomes?* To answer this question, I use tract-level data from the American Community Survey and apply a simple linear regression model, with median household income as the outcome and the percent of adults without a high school diploma as the predictor.  
+
+The results show a strong negative relationship: as the share of adults without high school completion increases, the predicted median household income decreases. This finding is important because it highlights how educational inequality continues to shape economic outcomes, even in one of the richest regions of the United States. The rest of this paper is organized as follows: the **Data** section describes the dataset and variables, the **Methods** section explains the regression model and its assumptions, the **Results** section presents the fitted model and interpretations, and the **References** section lists all sources used.  
+
+
+# Data
+
+The observational units in this study are **census tracts** within Santa Clara County, California. A census tract is a small, relatively stable subdivision created by the U.S. Census Bureau that is designed to capture populations of roughly similar size and characteristics. Each row of the dataset corresponds to one tract, and the cleaned dataset used in this analysis contains 150 tracts with complete information. Focusing on tracts rather than individuals allows for a neighborhood-level view of the relationship between education and income.  
+
+The dataset is called *Equity Index Census Tracts* and was compiled by the City of San José using the **American Community Survey (ACS) 2021 5-year estimates** [@sj2025equity]. While the full dataset includes many indicators of race, income, language, and education, this project focuses on two main variables. The outcome variable is **Median Household Income (`INCMEDIANINCOME`)**, which measures the midpoint household income in U.S. dollars for each tract. The predictor variable is **Percent Without High School Education (`EDULESSTHANHSRATIO`)**, which captures the share of adults aged 25 or older in a tract who did not complete a high school diploma or equivalent. Both variables are continuous: income is reported in dollars, and the education variable is expressed as a proportion between 0 and 1.  
+
+Some data preparation was needed before analysis. I removed columns that contained mostly missing values, such as income broken down by race, and I excluded derived equity score variables to avoid circularity, since some of them already combine education and income. I also dropped rows with missing values for the two main variables. After cleaning, the dataset contained 150 complete tracts and 38 useful variables, although only two are used in the regression. Median household incomes in the cleaned data range from about \$41,000 to \$250,000, with some values top-coded at the ACS limit. The share of adults without a high school diploma ranges from close to 0% in some tracts to about 45% in others, showing substantial variation across neighborhoods.  
+
+The ACS is widely considered the most reliable source for tract-level socioeconomic data, but it is still based on surveys and therefore subject to sampling error and nonresponse bias. For example, smaller tracts may have less precise estimates, and income is self-reported, which can introduce measurement error. Alternative or additional sources could include California Open Data, San Francisco Open Data, or the Harvard Dataverse, which also provide socioeconomic indicators at different geographic scales. However, the ACS remains the best choice for consistently measured data across all tracts in the county. To illustrate key characteristics of the data, I generated summary tables and visualizations such as histograms of income and education and a scatterplot of the two variables, which already suggested a strong negative association that motivated the regression analysis.
+
+
+# Methods
+
+To examine the connection between education and income, I used a **simple linear regression** (SLR) model. This method estimates how changes in one explanatory variable are associated with changes in a response variable. In my case, the explanatory variable is the **percent of adults without a high school diploma** in each census tract, and the response variable is the **median household income** of the tract.
+
+Formally, the model can be written as:
+
+$$
+\text{Income}_i = \beta_0 + \beta_1(\%\text{NoHS})_i + \varepsilon_i
+$$
+
+where:  
+- $\text{Income}_i$ is the median household income in tract *i* (measured in U.S. dollars),  
+- $(\%\text{NoHS})_i$ is the fraction of adults aged 25 or older without a high school diploma in tract *i*,  
+- $\beta_0$ is the intercept, which represents the predicted income when the predictor equals zero,  
+- $\beta_1$ is the slope, which shows the expected change in income when the predictor increases by one unit (interpreted as about \$3,097 per one-percentage-point increase), and  
+- $\varepsilon_i$ is the error term, capturing unmeasured influences.  
+
+Like all regression models, this one relies on several **assumptions**:  
+1. **Linearity** – the relationship between education and income is approximately linear.  
+2. **Independence** – the residuals (errors) for each tract are independent of one another.  
+3. **Constant variance (homoscedasticity)** – the spread of residuals is roughly the same across the range of the predictor.  
+4. **Normality** – the residuals are approximately normally distributed.  
+
+I checked these assumptions informally by looking at scatterplots and model output. While real-world data rarely fit perfectly, the model appeared reasonable for this tract-level analysis.  
+
+This study has several **limitations**. The model is bivariate, meaning it only considers one predictor. Other important factors, such as housing costs or employment sectors, may also influence income but are not included here. In addition, the data are aggregated at the census tract level, so the results cannot be interpreted as applying to individual households (a limitation known as the ecological fallacy). Finally, because the ACS is survey-based, there is some sampling error, particularly in tracts with smaller populations.  
+
+All analyses were carried out in **R** [@R-base] (version 4.x) using the packages `readr` [@readr], `ggplot2` [@ggplot2], `scales` [@scales], `dplyr` [@dplyr], and `broom` [@broom]. The workflow was designed to be reproducible: I cleaned the raw dataset, saved a cleaned version, and then fit the regression model on this file. Since the assignment required a simple regression, no model selection across multiple predictors was necessary, but I validated the model fit by reviewing standard regression diagnostics and confirming that the main conclusions remained stable.
+
+
+# Results
+
+The fitted regression model shows a clear negative relationship between education and income at the neighborhood level. The estimated equation is:
+
+$$
+\widehat{\text{Income}} = 183,922 - 309,721 \times (\%\text{NoHS})
+$$
+
+Here, the intercept of about \$183,922 represents the predicted median household income for a tract where all adults have at least a high school diploma. The slope coefficient is negative and large in magnitude. When interpreted on the percentage scale, it means that for every one-percentage-point increase in adults without a high school diploma, the median household income is predicted to decrease by about **\$3,097**.  
+
+The model accounts for nearly half of the variation in tract-level incomes, with an R² of about 0.49. The slope coefficient is statistically significant (*p* < .001), providing strong evidence that the relationship between education and income is not due to chance. This confirms the research question: tracts with lower levels of educational attainment also tend to have lower household incomes [@card1999causal].  
+
+
+```{r fig-income, echo=FALSE, fig.cap="Education vs. Income in Santa Clara County. The scatterplot shows tract-level median household income against the percent of adults without a high school diploma. The blue line is the fitted regression line with a 95% confidence band."}
+knitr::include_graphics("/Users/spartan/Documents/Math 261A/Project 1/Paper/education_vs_income_model.png")
+```
+```{r tab-coefs, echo=FALSE}
+readr::read_csv("/Users/spartan/Documents/Math 261A/Project 1/Paper/regression_results_table.csv", show_col_types = FALSE) |>
+  dplyr::mutate(
+  p.value = ifelse(p.value < 0.001, "< 0.001", round(p.value, 3))
+) |>
+  knitr::kable(caption = "Results from a simple linear regression predicting median household income from percent without high school diploma. The intercept is about $183,922, and the slope is –309,721 (p < .001), meaning income decreases by roughly $3,097 for every additional percentage point of adults without a high school diploma.")
+  
+```
+
+# References

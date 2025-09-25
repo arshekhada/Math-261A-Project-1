@@ -1,8 +1,3 @@
-#### ============================================================
-#### Simple Linear Regression: Education (No HS) -> Income
-#### Using the CLEANED file you created earlier
-#### ============================================================
-
 ## 0) Packages
 needed <- c("readr","ggplot2","scales","broom","dplyr","stringr","tidyr")
 to_install <- setdiff(needed, rownames(installed.packages()))
@@ -10,7 +5,7 @@ if (length(to_install)) install.packages(to_install)
 library(readr); library(ggplot2); library(scales)
 library(broom); library(dplyr); library(stringr); library(tidyr)
 
-## 1) Paths  (edit if needed)
+## 1) Paths 
 clean_path <- "~/Documents/Math 261A/Project 1/Clean_Equity_Index_Census_Tracts.csv"
 fig_path   <- "~/Documents/Math 261A/Project 1/education_vs_income_model.png"
 pred_path  <- "~/Documents/Math 261A/Project 1/tables/predictions.csv"
@@ -98,4 +93,38 @@ p <- ggplot(df, aes(x = EDULESSTHANHSRATIO, y = INCMEDIANINCOME)) +
 print(p)
 ggsave(fig_path, p, width = 7, height = 5, dpi = 300)
 cat("Saved figure to:", fig_path, "\n")
+
+
+
+
+#####################################################
+#####################################################
+#####################################################
+
+
+# Save a tidy coefficient table (report-ready)
+dir.create("~/Documents/Math 261A/Project 1/tables", showWarnings = FALSE, recursive = TRUE)
+
+coef_out <- broom::tidy(m) |>
+  mutate(
+    term = recode(term,
+                  "(Intercept)" = "Intercept",
+                  "EDULESSTHANHSRATIO" = "Percent without High School (ratio)"),
+    estimate = round(estimate, 0),
+    std.error = round(std.error, 0),
+    statistic = round(statistic, 2),
+    p.value = signif(p.value, 3)
+  )
+
+readr::write_csv(coef_out, "~/Documents/Math 261A/Project 1/tables/regression_results_table.csv")
+
+# Quick console summary line for the paper
+slope_pp <- coef(m)[["EDULESSTHANHSRATIO"]] * 0.01
+cat(sprintf("\nEffect per +1 percentage point: %s\n", scales::dollar(slope_pp)))
+cat(sprintf("R-squared: %.3f | Adj R-squared: %.3f\n\n",
+            summary(m)$r.squared, summary(m)$adj.r.squared))
+
+
+#####################################################
+
 
